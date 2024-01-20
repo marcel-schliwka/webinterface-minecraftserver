@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minecraft Server | Google Cloud</title>
+
+    <!-- Import third party libraries -->
+    <link rel="stylesheet" href="./css/bootstrap.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css"
+    />
+
+    <link rel="stylesheet" href="./css/admin.css" />
+    <script src="./js/bootstrap.bundle.min.js" defer></script>
+    <style>
+      .console-container {
+        width: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+      #console_output {
+        background-color: black;
+        color: white;
+        font-family: "Courier New", monospace;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        overflow: auto;
+        width: 100%; /* oder eine andere passende Breite */
+        height: 300px; /* oder eine andere passende Höhe */
+        white-space: pre-wrap; /* Fügt Zeilenumbrüche hinzu, wo nötig */
+        word-wrap: break-word; /* Um lange Wörter zu brechen */
+      }
+    </style>
+  </head>
+  <body>
+    <main class="d-flex flex-column align-items-center mt-5">
+      <h1>Minecraft Server Tekkit 1.12 - Admin Page</h1>
+
+      <div class="console-container">
+        <div id="terminal" style="width: 100%; height: 400px"></div>
+      </div>
+
+      <div class="button-container">
+        <button class="btn btn-danger" id="stop_server_btn">Stop Server</button>
+        <button class="btn btn-primary" id="restart_server_btn">
+          Restart Server
+        </button>
+        <button class="btn btn-primary" id="start_server_btn">
+          Start Server
+        </button>
+      </div>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
+    <script>
+      const stopBtn = document.getElementById("stop_server_btn");
+      const restartBtn = document.getElementById("restart_server_btn");
+      const startBtn = document.getElementById("start_server_btn");
+      const terminal = new Terminal();
+
+      const socket = io();
+
+      terminal.open(document.getElementById("terminal"));
+
+      terminal.onData((input) => {
+        socket.emit("input", input);
+      });
+
+      socket.on("output", (data) => {
+        terminal.write(data);
+      });
+
+      stopBtn.addEventListener("click", () => {
+        fetch("/server/stop", {
+          method: "POST",
+        }).then((response) => {
+          if (response.ok) {
+            return response.text();
+          } else {
+            throw new Error("Something went wrong, check server log!");
+          }
+        });
+      });
+
+      restartBtn.addEventListener("click", () => {
+        fetch("/server/restart", {
+          method: "POST",
+        }).then((response) => {
+          if (response.ok) {
+            return response.text();
+          } else {
+            throw new Error("Something went wrong, check server log!");
+          }
+        });
+      });
+
+      startBtn.addEventListener("click", () => {
+        fetch("/server/start", {
+          method: "POST",
+        }).then((response) => {
+          if (response.ok) {
+            return response.text();
+          } else {
+            throw new Error("Something went wrong, check server log!");
+          }
+        });
+      });
+
+      terminal.attachCustomKeyEventHandler((event) => {
+        if (event.ctrlKey && event.key === "c") {
+          return false;
+        }
+        return true; // Erlaubt alle anderen Tastenkombinationen
+      });
+    </script>
+  </body>
+</html>
